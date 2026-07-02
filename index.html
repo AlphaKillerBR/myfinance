@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Meu Financeiro</title>
+<meta name="theme-color" content="#FF7A50" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Financeiro" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <div id="topbar-greeting" class="topbar-greeting hidden">Bom dia,</div>
+    <h1 id="topbar-title">Início</h1>
+  </div>
+  <button id="sync-indicator" class="sync-indicator" title="Sincronizar com Google Drive">⟳</button>
+</header>
+
+<main id="app">
+
+  <!-- ================= INÍCIO ================= -->
+  <section id="view-inicio" class="view">
+    <div class="card balance-card">
+      <div class="balance-label">Saldo do mês</div>
+      <div id="balance-value" class="balance-value">R$ 0,00</div>
+      <div class="balance-sub">
+        <span class="tag income">Entradas <strong id="sum-income">R$ 0,00</strong></span>
+        <span class="tag expense">Saídas <strong id="sum-expense">R$ 0,00</strong></span>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="quick-action-btn" id="qa-add"><span class="qa-icon">➕</span><span>Lançar</span></button>
+      <button class="quick-action-btn" data-nav="metas"><span class="qa-icon">🎯</span><span>Metas</span></button>
+      <button class="quick-action-btn" data-nav="lembretes"><span class="qa-icon">🔔</span><span>Lembretes</span></button>
+      <button class="quick-action-btn" id="qa-sync"><span class="qa-icon">☁️</span><span>Drive</span></button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Gastos por forma de pagamento</h2>
+      </div>
+      <div id="chart-method" class="bar-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Gastos por categoria</h2>
+      </div>
+      <div id="chart-category" class="bar-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Próximos lembretes</h2>
+        <a href="#" class="link-btn" data-nav="lembretes">ver todos</a>
+      </div>
+      <div id="upcoming-reminders" class="list-simple"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Metas</h2>
+        <a href="#" class="link-btn" data-nav="metas">ver todas</a>
+      </div>
+      <div id="goals-preview" class="list-simple"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Últimos lançamentos</h2>
+        <a href="#" class="link-btn" data-nav="lancamentos">ver todos</a>
+      </div>
+      <div id="recent-transactions" class="list-simple"></div>
+    </div>
+  </section>
+
+  <!-- ================= LANÇAMENTOS ================= -->
+  <section id="view-lancamentos" class="view hidden">
+    <div class="card">
+      <div id="all-transactions-list" class="list-simple"></div>
+    </div>
+  </section>
+
+  <!-- ================= METAS ================= -->
+  <section id="view-metas" class="view hidden">
+    <button class="primary-btn full-width" id="btn-new-goal">+ Nova meta</button>
+    <div id="goals-list" class="stack"></div>
+  </section>
+
+  <!-- ================= LEMBRETES ================= -->
+  <section id="view-lembretes" class="view hidden">
+    <button class="primary-btn full-width" id="btn-new-reminder">+ Novo lembrete</button>
+    <div id="reminders-list" class="stack"></div>
+  </section>
+
+  <!-- ================= AJUSTES ================= -->
+  <section id="view-ajustes" class="view hidden">
+    <div class="card">
+      <h2>Google Drive</h2>
+      <p class="muted" id="drive-status-text">Não conectado.</p>
+      <button class="primary-btn full-width" id="btn-drive-connect">Conectar Google Drive</button>
+      <button class="secondary-btn full-width hidden" id="btn-drive-sync">Sincronizar agora</button>
+      <button class="danger-btn full-width hidden" id="btn-drive-disconnect">Desconectar</button>
+    </div>
+    <div class="card">
+      <h2>Backup manual</h2>
+      <p class="muted">Exporte um arquivo com todos os seus dados, ou importe um backup salvo.</p>
+      <button class="secondary-btn full-width" id="btn-export">Exportar dados (.json)</button>
+      <button class="secondary-btn full-width" id="btn-import">Importar backup (.json)</button>
+      <input type="file" id="import-file-input" accept="application/json" class="hidden" />
+    </div>
+    <div class="card">
+      <h2>Categorias</h2>
+      <p class="muted">Gerencie as categorias usadas nos lançamentos.</p>
+      <div id="categories-list" class="chip-row"></div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-nav="inicio">
+    <span class="tab-icon">🏠</span><span>Início</span>
+  </button>
+  <button class="tab-btn" data-nav="metas">
+    <span class="tab-icon">🎯</span><span>Metas</span>
+  </button>
+  <button id="fab-add" class="fab-nav-btn" title="Novo lançamento">+</button>
+  <button class="tab-btn" data-nav="lembretes">
+    <span class="tab-icon">🔔</span><span>Lembretes</span>
+  </button>
+  <button class="tab-btn" data-nav="ajustes">
+    <span class="tab-icon">⚙️</span><span>Ajustes</span>
+  </button>
+</nav>
+
+<!-- ================= MODAL: novo lançamento ================= -->
+<div id="modal-transaction" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2>Novo lançamento</h2>
+    <div class="segmented" id="type-toggle">
+      <button class="segmented-btn active" data-type="expense">Despesa</button>
+      <button class="segmented-btn" data-type="income">Receita</button>
+    </div>
+    <label class="field-label">Valor</label>
+    <input type="text" inputmode="decimal" id="input-amount" class="amount-input" placeholder="0,00" />
+
+    <label class="field-label">Forma</label>
+    <div class="chip-row" id="method-row">
+      <button class="chip active" data-method="debito">Débito</button>
+      <button class="chip" data-method="credito">Crédito</button>
+      <button class="chip" data-method="pix">Pix</button>
+      <button class="chip" data-method="dinheiro">Dinheiro</button>
+    </div>
+
+    <label class="field-label">Categoria</label>
+    <div class="chip-row" id="category-row"></div>
+
+    <label class="field-label">Data</label>
+    <input type="date" id="input-date" />
+
+    <label class="field-label">Descrição (opcional)</label>
+    <input type="text" id="input-description" placeholder="Ex: Mercado, Uber, Salário..." />
+
+    <div class="modal-actions">
+      <button class="secondary-btn" id="btn-cancel-transaction">Cancelar</button>
+      <button class="primary-btn" id="btn-save-transaction">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: nova/editar meta ================= -->
+<div id="modal-goal" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2 id="goal-modal-title">Nova meta</h2>
+    <label class="field-label">Nome</label>
+    <input type="text" id="goal-name" placeholder="Ex: Viagem para o Nordeste" />
+    <label class="field-label">Valor alvo</label>
+    <input type="text" inputmode="decimal" id="goal-target" placeholder="0,00" />
+    <label class="field-label">Moeda do valor alvo</label>
+    <div class="chip-row" id="goal-currency-row">
+      <button class="chip active" data-currency="BRL">R$ Real</button>
+      <button class="chip" data-currency="USD">US$ Dólar</button>
+      <button class="chip" data-currency="EUR">€ Euro</button>
+    </div>
+    <label class="field-label">Prazo (opcional)</label>
+    <input type="date" id="goal-deadline" />
+    <label class="field-label">Ícone</label>
+    <div class="chip-row" id="goal-icon-row">
+      <button class="chip active" data-icon="✈️">✈️</button>
+      <button class="chip" data-icon="🏖️">🏖️</button>
+      <button class="chip" data-icon="🏠">🏠</button>
+      <button class="chip" data-icon="🚗">🚗</button>
+      <button class="chip" data-icon="🎓">🎓</button>
+      <button class="chip" data-icon="💍">💍</button>
+      <button class="chip" data-icon="💰">💰</button>
+      <button class="chip" data-icon="🎁">🎁</button>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary-btn" id="btn-cancel-goal">Cancelar</button>
+      <button class="primary-btn" id="btn-save-goal">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: aporte em meta ================= -->
+<div id="modal-contribution" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2>Adicionar valor à meta</h2>
+    <label class="field-label">Valor</label>
+    <input type="text" inputmode="decimal" id="contribution-amount" placeholder="0,00" />
+    <label class="field-label">Moeda</label>
+    <div class="chip-row" id="contribution-currency-row">
+      <button class="chip active" data-currency="BRL">R$ Real</button>
+      <button class="chip" data-currency="USD">US$ Dólar</button>
+      <button class="chip" data-currency="EUR">€ Euro</button>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary-btn" id="btn-cancel-contribution">Cancelar</button>
+      <button class="primary-btn" id="btn-save-contribution">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: novo/editar lembrete ================= -->
+<div id="modal-reminder" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2 id="reminder-modal-title">Novo lembrete</h2>
+    <label class="field-label">Nome</label>
+    <input type="text" id="reminder-name" placeholder="Ex: Aluguel, Fatura do cartão..." />
+    <label class="field-label">Valor</label>
+    <input type="text" inputmode="decimal" id="reminder-amount" placeholder="0,00" />
+    <label class="field-label">Vencimento</label>
+    <input type="date" id="reminder-due-date" />
+    <label class="field-label">Repetição</label>
+    <div class="chip-row" id="reminder-recurrence-row">
+      <button class="chip active" data-recurrence="none">Não repete</button>
+      <button class="chip" data-recurrence="monthly">Mensal</button>
+      <button class="chip" data-recurrence="weekly">Semanal</button>
+      <button class="chip" data-recurrence="yearly">Anual</button>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary-btn" id="btn-cancel-reminder">Cancelar</button>
+      <button class="primary-btn" id="btn-save-reminder">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/drive.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

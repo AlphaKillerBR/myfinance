@@ -1,0 +1,15 @@
+{
+  "name": "Meu Financeiro",
+  "short_name": "Financeiro",
+  "description": "Controle rápido de gastos, metas financeiras e lembretes de pagamento.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFE7D4",
+  "theme_color": "#FF7A50",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
